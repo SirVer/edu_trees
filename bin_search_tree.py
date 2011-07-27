@@ -165,16 +165,30 @@ class BinarySearchTree(object):
     def plot(self, fn):
         df = pydot.Dot()
 
-        for node in self:
-            df.add_node(pydot.Node(node.key))
+        def _add_dummy_node(node, appendix):
+            dn = str(node.key) + appendix
+            df.add_node(pydot.Node(dn, label="", shape="point", color="green"))
+            df.add_edge(pydot.Edge(node.key, dn))
 
-        for node in self:
+        def _plot_node(node):
+            df.add_node(pydot.Node(node.key))
             if node.l:
+                _plot_node(node.l)
                 df.add_edge(pydot.Edge(node.key, node.l.key))
+            else:
+                _add_dummy_node(node, '_l')
+
             if node.r:
+                _plot_node(node.r)
                 df.add_edge(pydot.Edge(node.key, node.r.key))
+            else:
+                _add_dummy_node(node, '_r')
+
+        if self._root:
+            _plot_node(self._root)
 
         df.write_pdf(fn)
+        df.write_dot(fn + '.dot')
 
 def blah():
     k = BinarySearchTree()
