@@ -74,16 +74,15 @@ class BinarySearchTree(object):
             n.parent.l = None
         else:
             n.parent.r = None
-        n.parent = None
 
     def _delete_node_with_one_child(self, n):
         child = n.l or n.r
 
-        n.key = child.key
-        n.l = child.l
-        n.r = child.r
-        if n.l: n.l.parent = n
-        if n.r: n.r.parent = n
+        if n.parent.l == n:
+            n.parent.l = child
+        if n.parent.r == n:
+            n.parent.r = child
+        child.parent = n.parent
 
     def _biggest_succ(self, node):
         if node.r:
