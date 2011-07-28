@@ -8,56 +8,13 @@ Implementation of a binary search tree
 from functools import total_ordering
 import random
 
-import pydot
-
 @total_ordering
 class Node(object):
-    def __init__(self, key, data, parent = None, child_left = None, child_right = None):
+    def __init__(self, key, parent = None, l = None, r = None):
         self.key = key
-        self.data = data
-        self._parent = parent
-        self._l = child_left
-        self._r = child_right
-
-    def replace_with(self, n):
-        self.key = n.key
-        self.data = n.data
-
-    def l():
-        """The left (smaller) child"""
-        def fget(self):
-            return self._l
-        def fset(self, value):
-            if value is not None:
-                value._parent = self
-            self._l = value
-        return locals()
-    l = property(**l())
-
-    def r():
-        """The right (bigger) child"""
-        def fget(self):
-            return self._r
-        def fset(self, value):
-            if value is not None:
-                value._parent = self
-            self._r = value
-        return locals()
-    r = property(**r())
-
-    def parent():
-        """The parent of this node"""
-        def fget(self):
-            return self._parent
-        def fset(self, value):
-            self._parent = value
-        return locals()
-    parent = property(**parent())
-
-    @property
-    def grandparent(self):
-        if self._parent:
-            return self._parent._parent
+        self.parent = parent
+        self.l = l
+        self.r = r
 
     def __lt__(self, other):
         return self.key < other.key
@@ -68,57 +25,78 @@ class Node(object):
         return self.key == other.key
 
     def __repr__(self):
-        return "Node(%s,%s)" % (self.key, self.data)
+        return "Node(%r,%s,%s,%s)" % (self.key,
+            self.parent.key if self.parent else None,
+            self.l.key if self.l else None,
+            self.r.key if self.r else None)
 
 
 class BinarySearchTree(object):
     def __init__(self):
         self._root = None
 
-# TODO: deleting
-    def insert(self, k, v = None):
-        self._root = self._insert(self._root, Node(k,v))
+    # Search a node
+    def _search(self, node, key):
+        if node is None: return None
+        if node.key == key: return node
+        return self._search(node.l, key) if key < node.key else \
+               self._search(node.r, key)
+
+    # Inserting
+    def insert(self, k):
+        self._root = self._insert(self._root, k)
         return self._root
 
-    def _biggest_child(self, node):
-        if node.r:
-            return self._biggest_child(node.r)
-        return node
+    def _insert(self, node, key):
+        if node is None: return Node(key)
 
-    def _smallest_child(self, node):
-        if node.l:
-            return self._smallest_child(node.l)
-        return node
-
-    def _insert(self, node, data):
-        if node is None:
-            return data
-
-        if data <= node:
-            node.l = self._insert(node.l, data)
+        if key <= node.key:
+            node.l = self._insert(node.l, key)
+            node.l.parent = node
         else:
-            node.r = self._insert(node.r, data)
-
+            node.r = self._insert(node.r, key)
+            node.r.parent = node
         return node
+
+    # Deleting
+    def delete(self, k):
+        n = self._search(self._root, k)
+        if not n: return
+
+        self._delete_node(n)
+
 
     def _delete_leaf(self, n):
-        if n.parent._l == n:
-            n.parent._l = None
+        if n.parent.l == n:
+            n.parent.l = None
         else:
-            n.parent._r = None
-        n._parent = None
+            n.parent.r = None
+        n.parent = None
 
     def _delete_node_with_one_child(self, n):
-        child = n._l or n._r
-        n.replace_with(child)
+        child = n.l or n.r
+
+        n.key = child.key
         n.l = child.l
         n.r = child.r
+        if n.l: n.l.parent = n
+        if n.r: n.r.parent = n
+
+    def _biggest_succ(self, node):
+        if node.r:
+            return self._biggest_succ(node.r)
+        return node
+
+    def _smallest_succ(self, node):
+        if node.l:
+            return self._smallest_succ(node.l)
+        return node
 
     def _delete_node_with_two_childs(self, n):
-        child = self._smallest_child(n.r) if random.choice((0,1)) == 0 \
-                else self._biggest_child(n.l)
+        child = self._smallest_succ(n.r) if random.choice((0,1)) == 0 \
+                else self._biggest_succ(n.l)
 
-        n.replace_with(child)
+        n.key = child.key
         self._delete_node(child)
 
     def _delete_node(self, n):
@@ -129,30 +107,13 @@ class BinarySearchTree(object):
         else:
             self._delete_node_with_two_childs(n)
 
-    def delete(self, k):
-        n = self.search(k)
-        if not n: return
-
-        self._delete_node(n)
-
-
-    def search(self, k):
-        cur = self._root
-        while 1:
-            if not cur: return None
-            if k < cur.key:
-                cur = cur.l
-            elif k > cur.key:
-                cur = cur.r
-            else:
-                return cur
 
     def __iter__(self):
         def _do_yields(node):
             if node.l:
                 for k in _do_yields(node.l):
                     yield k
-            yield node
+            yield node.key
             if node.r:
                 for k in _do_yields(node.r):
                     yield k
@@ -161,8 +122,8 @@ class BinarySearchTree(object):
             for k in _do_yields(self._root):
                 yield k
 
-
     def plot(self, fn):
+        import pydot
         df = pydot.Dot()
 
         def _add_dummy_node(node, appendix):
@@ -189,27 +150,4 @@ class BinarySearchTree(object):
 
         df.write_pdf(fn)
         df.write_dot(fn + '.dot')
-
-def blah():
-    k = BinarySearchTree()
-    maxn = 20
-    vals = range(maxn)
-    random.shuffle(vals)
-
-    for v in vals: k.insert(v)
-
-    dv = range(0,maxn,2)
-
-    vals = list(v.key for v in k)
-    print "vals: %s" % (vals)
-
-    k.plot("blah_orig.pdf")
-
-    return k, dv
-
-
-
-
-
-
 
