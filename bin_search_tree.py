@@ -32,8 +32,11 @@ class Node(object):
 
 
 class BinarySearchTree(object):
-    def __init__(self):
+    def __init__(self, iter = []):
         self._root = None
+
+        for i in iter:
+            self.insert(i)
 
     # Search a node
     def _search(self, node, key):
@@ -124,30 +127,32 @@ class BinarySearchTree(object):
 
     def plot(self, fn):
         import pydot
-        df = pydot.Dot()
+        import os.path
+
+        df = pydot.Dot(bgcolor="#ffffff00")
 
         def _add_dummy_node(node, appendix):
             dn = str(node.key) + appendix
-            df.add_node(pydot.Node(dn, label="", shape="point", color="green"))
-            df.add_edge(pydot.Edge(node.key, dn))
+            df.add_node(pydot.Node(dn, label="", shape="point", color="white"))
+            df.add_edge(pydot.Edge(node.key, dn, color="#cecece"))
 
         def _plot_node(node):
-            df.add_node(pydot.Node(node.key))
+            df.add_node(pydot.Node(node.key, color="#cecece", fontcolor="#cecece"))
             if node.l:
                 _plot_node(node.l)
-                df.add_edge(pydot.Edge(node.key, node.l.key))
+                df.add_edge(pydot.Edge(node.key, node.l.key, color="#cecece"))
             else:
                 _add_dummy_node(node, '_l')
 
             if node.r:
                 _plot_node(node.r)
-                df.add_edge(pydot.Edge(node.key, node.r.key))
+                df.add_edge(pydot.Edge(node.key, node.r.key, color="#cecece"))
             else:
                 _add_dummy_node(node, '_r')
 
         if self._root:
             _plot_node(self._root)
 
-        df.write_pdf(fn)
-        df.write_dot(fn + '.dot')
+        ft = os.path.splitext(fn)[1].replace(".","_")
+        df.__getattribute__("write"+ ft)(fn)
 
