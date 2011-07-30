@@ -8,6 +8,8 @@ Implementation of a binary search tree
 from functools import total_ordering
 import random
 
+import pydot
+
 @total_ordering
 class Node(object):
     def __init__(self, key, parent = None, l = None, r = None):
@@ -30,10 +32,16 @@ class Node(object):
             self.l.key if self.l else None,
             self.r.key if self.r else None)
 
+    @property
+    def pydot_node(self):
+        return pydot.Node(self.key, color="#cecece", fontcolor="#cecece")
+
 
 class BinarySearchTree(object):
-    def __init__(self, iter = []):
+    def __init__(self, iter = [], node_klass = Node):
         self._root = None
+
+        self._node_klass = node_klass
 
         for i in iter:
             self.insert(i)
@@ -50,15 +58,14 @@ class BinarySearchTree(object):
         self._root = self._insert(self._root, k)
         return self._root
 
-    def _insert(self, node, key):
-        if node is None: return Node(key)
+    def _insert(self, node, key, parent = None):
+        if node is None:
+            return self._node_klass(key, parent = parent)
 
         if key <= node.key:
-            node.l = self._insert(node.l, key)
-            node.l.parent = node
+            node.l = self._insert(node.l, key, node)
         else:
-            node.r = self._insert(node.r, key)
-            node.r.parent = node
+            node.r = self._insert(node.r, key, node)
         return node
 
     # Deleting
@@ -125,7 +132,6 @@ class BinarySearchTree(object):
                 yield k
 
     def plot(self, fn):
-        import pydot
         import os.path
 
         df = pydot.Dot(bgcolor="#ffffff00")
@@ -136,7 +142,7 @@ class BinarySearchTree(object):
             df.add_edge(pydot.Edge(node.key, dn, color="#cecece"))
 
         def _plot_node(node):
-            df.add_node(pydot.Node(node.key, color="#cecece", fontcolor="#cecece"))
+            df.add_node(node.pydot_node)
             if node.l:
                 _plot_node(node.l)
                 df.add_edge(pydot.Edge(node.key, node.l.key, color="#cecece"))
