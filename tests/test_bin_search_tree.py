@@ -48,17 +48,17 @@ class TestAVLTree(unittest.TestCase):
 
         assert_equal(sorted(vals), list(self.t))
 
-    # def test_deleting(self):
-        # maxn = 1000
-        # vals = range(maxn)
-        # random.shuffle(vals)
+    def test_deleting(self):
+        maxn = 1000
+        vals = range(maxn)
+        random.shuffle(vals)
 
-        # for v in vals: self.t.insert(v)
+        for v in vals: self.t.insert(v)
 
-        # for v in range(0,maxn,2):
-            # self.t.delete(v)
+        for v in range(0,maxn,2):
+            self.t.delete(v)
 
-        # assert_equal(range(1,maxn,2), list(self.t))
+        assert_equal(range(1,maxn,2), list(self.t))
 
 if __name__ == '__main__':
    unittest.main()

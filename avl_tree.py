@@ -37,6 +37,7 @@ class AVLNode(Node):
         )
 
 
+import random
 class AVLTree(BinarySearchTree):
 
     def __init__(self, iter = []):
@@ -70,13 +71,60 @@ class AVLTree(BinarySearchTree):
 
         return node
 
+    def _delete_leaf(self, n):
+        par = n.parent
+        if n.parent.l == n:
+            n.parent.l = None
+        else:
+            n.parent.r = None
+
+        while par:
+            if abs(par.height_balance) > 1:
+                par = self._rebalance(par)
+            else:
+                par = par.parent
+
+    def _delete_node_with_one_child(self, n):
+        child = n.l or n.r
+
+        if n.parent.l == n:
+            n.parent.l = child
+        if n.parent.r == n:
+            n.parent.r = child
+        child.parent = n.parent
+
+        par = child.parent
+        while par:
+            if abs(par.height_balance) > 1:
+                par = self._rebalance(par)
+            else:
+                par = par.parent
+
+    def _biggest_succ(self, node):
+        if node.r:
+            return self._biggest_succ(node.r)
+        return node
+
+    def _smallest_succ(self, node):
+        if node.l:
+            return self._smallest_succ(node.l)
+        return node
+
+    def _delete_node_with_two_childs(self, n):
+        child = self._smallest_succ(n.r) if random.choice((0,1)) == 0 \
+                else self._biggest_succ(n.l)
+
+        n.key = child.key
+        self._delete_node(child)
+
+
 
     def _rebalance(self, P):
         assert(abs(P.height_balance) == 2)
         if P.height_balance == 2: # left subtree > right subtree
             L = P.l
-            assert abs(L.height_balance) == 1, "%s" % L.height_balance
-            if L.height_balance == 1:
+            #assert abs(L.height_balance) == 1, "%s" % L.height_balance
+            if L.height_balance >= 0:
                 self._right_rotate(P)
                 #self._right_rotate(L)
             else:
@@ -85,8 +133,8 @@ class AVLTree(BinarySearchTree):
             return L
         else: # right subtree > left subtree
             R = P.r
-            assert abs(R.height_balance) == 1, "%s" % R.height_balance
-            if R.height_balance == -1:
+            #assert abs(R.height_balance) == 1, "%s" % R.height_balance
+            if R.height_balance <= 0:
                 self._left_rotate(P)
                 #self._left_rotate(R)
             else:
