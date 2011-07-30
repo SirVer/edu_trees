@@ -54,8 +54,11 @@ class BinarySearchTree(object):
                self._search(node.r, key)
 
     # Inserting
-    def insert(self, k):
-        self._root = self._insert(self._root, k)
+    def insert(self, key):
+        if not self._root:
+            self._root = self._node_klass(key)
+        else:
+            self._insert(self._root, key)
         return self._root
 
     def _insert(self, node, key, parent = None):
@@ -74,7 +77,6 @@ class BinarySearchTree(object):
         if not n: return
 
         self._delete_node(n)
-
 
     def _delete_leaf(self, n):
         if n.parent.l == n:

@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import pydot
 
 from bin_search_tree import Node, BinarySearchTree
-
-import pydot
 
 class AVLNode(Node):
     def __init__(self, key, parent = None, l = None, r = None):
         Node.__init__(self, key, parent, l, r)
+        self.height = 1
 
     @property
     def pydot_node(self):
@@ -29,96 +29,42 @@ class AVLNode(Node):
         l = 0 if self.l is None else self.l.height
         return l - r
 
-    @property
-    def height(self):
-        return 1 + max(
-            0 if self.l is None else self.l.height,
-            0 if self.r is None else self.r.height
-        )
-
-
-import random
 class AVLTree(BinarySearchTree):
-
     def __init__(self, iter = []):
         BinarySearchTree.__init__(self, iter, AVLNode)
 
-
-    def insert(self, key):
-        if not self._root:
-            self._root = self._node_klass(key)
-        else:
-            self._insert(self._root, key)
-        return self._root
-
+    # Inserting
     def _insert(self, node, key):
-        assert(node)
-
         if key <= node.key:
             if node.l is None:
                 node.l = self._node_klass(key, node)
+                self._recompute_height(node)
             else:
                 self._insert(node.l, key)
         else:
             if node.r is None:
                 node.r = self._node_klass(key, node)
+                self._recompute_height(node)
             else:
                 self._insert(node.r, key)
 
-        if node:
-            if abs(node.height_balance) > 1:
-                self._rebalance(node)
+        if abs(node.height_balance) > 1:
+            self._rebalance(node)
 
         return node
 
+    # Deleting: rebalance tree if necessary
     def _delete_leaf(self, n):
         par = n.parent
-        if n.parent.l == n:
-            n.parent.l = None
-        else:
-            n.parent.r = None
-
-        while par:
-            if abs(par.height_balance) > 1:
-                par = self._rebalance(par)
-            else:
-                par = par.parent
+        BinarySearchTree._delete_leaf(self, n)
+        self._rebalance_till_root(par)
 
     def _delete_node_with_one_child(self, n):
-        child = n.l or n.r
+        par = n.parent
+        BinarySearchTree._delete_node_with_one_child(self, n)
+        self._rebalance_till_root(par)
 
-        if n.parent.l == n:
-            n.parent.l = child
-        if n.parent.r == n:
-            n.parent.r = child
-        child.parent = n.parent
-
-        par = child.parent
-        while par:
-            if abs(par.height_balance) > 1:
-                par = self._rebalance(par)
-            else:
-                par = par.parent
-
-    def _biggest_succ(self, node):
-        if node.r:
-            return self._biggest_succ(node.r)
-        return node
-
-    def _smallest_succ(self, node):
-        if node.l:
-            return self._smallest_succ(node.l)
-        return node
-
-    def _delete_node_with_two_childs(self, n):
-        child = self._smallest_succ(n.r) if random.choice((0,1)) == 0 \
-                else self._biggest_succ(n.l)
-
-        n.key = child.key
-        self._delete_node(child)
-
-
-
+    # Rebalancing:
     def _rebalance(self, P):
         assert(abs(P.height_balance) == 2)
         if P.height_balance == 2: # left subtree > right subtree
@@ -141,9 +87,6 @@ class AVLTree(BinarySearchTree):
                 self._right_rotate(R)
                 self._left_rotate(P)
             return R
-
-
-
 
     def _left_rotate(self, P):
         R = P.r
@@ -168,6 +111,9 @@ class AVLTree(BinarySearchTree):
         if B:
             B.parent = P
 
+        self._recompute_height(P)
+        self._recompute_height(R)
+
     def _right_rotate(self, P):
         L = P.l
         GP = P.parent
@@ -191,4 +137,23 @@ class AVLTree(BinarySearchTree):
         if B:
             B.parent = P
 
+        self._recompute_height(P)
+        self._recompute_height(L)
+
+    def _rebalance_till_root(self, node):
+        self._recompute_height(node)
+        while node:
+            if abs(node.height_balance) > 1:
+                node = self._rebalance(node)
+            else:
+                node = node.parent
+
+    def _recompute_height(self, node):
+        node.height = 1 + max(
+            node.l.height if node.l else 0,
+            node.r.height if node.r else 0,
+        )
+
+        if node.parent:
+            self._recompute_height(node.parent)
 

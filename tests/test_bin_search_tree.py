@@ -12,53 +12,35 @@ from avl_tree import AVLTree
 
 import random
 
-class TestBinarySearchTree(unittest.TestCase):
+class _BaseForBinarySearchTree(object):
+    def test_sorting(self):
+        vals = range(10000)
+        random.shuffle(vals)
+
+        for v in vals: self.t.insert(v)
+
+        assert_equal(sorted(vals), list(self.t))
+
+    def test_deleting(self):
+        maxn = 10000
+        vals = range(maxn)
+        random.shuffle(vals)
+        delete_vals = [ random.randint(0,maxn-1) for i in range(maxn // 3) ]
+
+        for v in vals: self.t.insert(v)
+
+        for v in delete_vals:
+            self.t.delete(v)
+
+        assert_equal(sorted(set(vals) - set(delete_vals)), list(self.t))
+
+class TestBinarySearchTree(_BaseForBinarySearchTree, unittest.TestCase):
     def setUp(self):
         self.t = BinarySearchTree()
 
-    def test_sorting(self):
-        vals = range(100)
-        random.shuffle(vals)
-
-        for v in vals: self.t.insert(v)
-
-        assert_equal(sorted(vals), list(self.t))
-
-    def test_deleting(self):
-        maxn = 1000
-        vals = range(maxn)
-        random.shuffle(vals)
-
-        for v in vals: self.t.insert(v)
-
-        for v in range(0,maxn,2):
-            self.t.delete(v)
-
-        assert_equal(range(1,maxn,2), list(self.t))
-
-class TestAVLTree(unittest.TestCase):
+class TestAVLTree(_BaseForBinarySearchTree, unittest.TestCase):
     def setUp(self):
         self.t = AVLTree()
-
-    def test_sorting(self):
-        vals = range(100)
-        random.shuffle(vals)
-
-        for v in vals: self.t.insert(v)
-
-        assert_equal(sorted(vals), list(self.t))
-
-    def test_deleting(self):
-        maxn = 1000
-        vals = range(maxn)
-        random.shuffle(vals)
-
-        for v in vals: self.t.insert(v)
-
-        for v in range(0,maxn,2):
-            self.t.delete(v)
-
-        assert_equal(range(1,maxn,2), list(self.t))
 
 if __name__ == '__main__':
    unittest.main()
