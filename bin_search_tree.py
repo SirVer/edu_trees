@@ -61,15 +61,25 @@ class BinarySearchTree(object):
             self._insert(self._root, key)
         return self._root
 
-    def _insert(self, node, key, parent = None):
-        if node is None:
-            return self._node_klass(key, parent = parent)
 
+    def _insert(self, node, key):
         if key <= node.key:
-            node.l = self._insert(node.l, key, node)
+            if node.l is None:
+                node.l = self._node_klass(key, node)
+                self._just_inserted(node.l)
+            else:
+                self._insert(node.l, key)
         else:
-            node.r = self._insert(node.r, key, node)
+            if node.r is None:
+                node.r = self._node_klass(key, node)
+                self._just_inserted(node.r)
+            else:
+                self._insert(node.r, key)
+
         return node
+
+    def _just_inserted(self, node):
+        pass # no work needs to be done after insertion for BST
 
     # Deleting
     def delete(self, k):
