@@ -10,9 +10,8 @@ Related Blog Posts
 ------------------
 
 * `Binary search trees`__ 
+* `AVL trees`__ 
 
 __ http://sirver.widelands.org/blog/2011/07/28/binary-search-trees
-
-
-
+__ http://sirver.widelands.org/blog/2011/07/30/avl-trees
 
