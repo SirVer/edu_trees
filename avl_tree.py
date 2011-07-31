@@ -111,8 +111,8 @@ class AVLTree(BinarySearchTree):
         if B:
             B.parent = P
 
-        self._recompute_height(P)
-        self._recompute_height(R)
+        self._update_height(P)
+        self._rebalance_till_root(R)
 
     def _right_rotate(self, P):
         L = P.l
@@ -137,23 +137,28 @@ class AVLTree(BinarySearchTree):
         if B:
             B.parent = P
 
-        self._recompute_height(P)
-        self._recompute_height(L)
+        self._update_height(P)
+        self._rebalance_till_root(L)
 
-    def _rebalance_till_root(self, node):
-        self._recompute_height(node)
-        while node:
-            if abs(node.height_balance) > 1:
-                node = self._rebalance(node)
-            else:
-                node = node.parent
-
-    def _recompute_height(self, node):
+    def _update_height(self, node):
+        """Returns True if the height has changed"""
+        old_height = node.height
         node.height = 1 + max(
             node.l.height if node.l else 0,
             node.r.height if node.r else 0,
         )
+        return node.height != old_height
 
+    def _rebalance_till_root(self, node):
+        while node and self._recompute_height(node):
+            node = node.parent if abs(node.height_balance) <= 1 else self._rebalance(node)
+
+    def _recompute_height(self, node):
+        old_height = node.height
+        node.height = 1 + max(
+            node.l.height if node.l else 0,
+            node.r.height if node.r else 0,
+        )
         if node.parent:
             self._recompute_height(node.parent)
 
