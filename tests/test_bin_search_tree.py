@@ -9,6 +9,7 @@ sys.path.append(os.path.dirname(__file__) + os.path.sep + '..')
 
 from bin_search_tree import BinarySearchTree
 from avl_tree import AVLTree
+from red_black_tree import RedBlackTree
 
 import random
 
@@ -41,6 +42,10 @@ class TestBinarySearchTree(_BaseForBinarySearchTree, unittest.TestCase):
 class TestAVLTree(_BaseForBinarySearchTree, unittest.TestCase):
     def setUp(self):
         self.t = AVLTree()
+
+class TestRedBlackTree(_BaseForBinarySearchTree, unittest.TestCase):
+    def setUp(self):
+        self.t = RedBlackTree()
 
 if __name__ == '__main__':
    unittest.main()

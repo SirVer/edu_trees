@@ -77,7 +77,6 @@ class AVLTree(BinarySearchTree):
             #assert abs(L.height_balance) == 1, "%s" % L.height_balance
             if L.height_balance >= 0:
                 self._right_rotate(P)
-                #self._right_rotate(L)
             else:
                 self._left_rotate(L)
                 self._right_rotate(P)
@@ -87,7 +86,6 @@ class AVLTree(BinarySearchTree):
             #assert abs(R.height_balance) == 1, "%s" % R.height_balance
             if R.height_balance <= 0:
                 self._left_rotate(P)
-                #self._left_rotate(R)
             else:
                 self._right_rotate(R)
                 self._left_rotate(P)
